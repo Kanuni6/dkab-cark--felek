@@ -937,16 +937,17 @@ numGroupsSelect değiştiğinde inputları güncelle
     //           GİRİŞ EKRANI İŞLEVLERİ      //
     // ------------------------------------- //
 
-    // Grup sayısı değiştikçe inputları oluştur
+        // Grup sayısı değiştikçe inputları oluştur
     function generateTeamInputs() {
-  const numGroups = parseInt(numGroupsSelect.value);
-  teamNameInputsDiv.innerHTML = '';
-  for (let i = 1; i <= numGroups; i++) {
-    const label = document.createElement('label');
-    label.innerHTML = `Grup ${i} Adı: <input type="text" name="grup${i}" required value="Grup ${i}" />`;
-    teamNameInputsDiv.appendChild(label);
-  }
-}
+      const numGroups = parseInt(numGroupsSelect.value);
+      teamNameInputsDiv.innerHTML = ''; // Mevcut inputları temizle
+      for (let i = 1; i <= numGroups; i++) {
+        const label = document.createElement('label');
+        label.innerHTML = `Grup ${i} Adı: <input type="text" name="grup${i}" required value="Grup ${i}" />`;
+        teamNameInputsDiv.appendChild(label);
+      }
+    }
+
     // Form gönderildiğinde takımları kaydet ve çark ekranına geç
     document.getElementById("teamForm").addEventListener("submit", function(e) {
       e.preventDefault();
