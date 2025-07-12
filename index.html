@@ -929,6 +929,8 @@
     document.addEventListener('DOMContentLoaded', () => {
         showPage('girisEkrani');
         generateTeamInputs();
+numGroupsSelect değiştiğinde inputları güncelle
+    numGroupsSelect.addEventListener('change', generateTeamInputs);
     });
 
     // ------------------------------------- //
