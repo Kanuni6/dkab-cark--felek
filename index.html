@@ -1,0 +1,1495 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bilgi Yarışması</title>
+  <style>
+    /* ------------------------------------- */
+    /* GLOBAL VE GENEL DÜZEN AYARLARI        */
+    /* ------------------------------------- */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #f0f4ff, #e6ffe9);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+      color: #1a202c;
+      font-size: 1.1rem; /* Masaüstü için genel font boyutunu artırdık */
+    }
+
+    /* Tüm Ekran Kapsayıcıları */
+    .giris-ekrani,
+    .tam-ekran-kapsayici,
+    .oyun-bitti-ekran {
+      background: #ffffff;
+      padding: 30px 40px;
+      border-radius: 12px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+      width: 100%;
+      max-width: 480px; /* Giriş ekranı için varsayılan maks genişlik */
+    }
+
+    .tam-ekran-kapsayici {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      max-width: 800px; /* Çark ve soru ekranları için genişletilmiş maks genişlik */
+      margin: auto; /* Ortalamak için */
+    }
+
+    .oyun-bitti-ekran {
+      max-width: 720px; /* Oyun bitti ekranı için maks genişlik */
+      text-align: center;
+    }
+
+
+    /* Genel Başlık Stili */
+    .baslik {
+      font-size: 2rem; /* Başlık font boyutunu artırdık */
+      margin-bottom: 28px;
+      text-align: center;
+      color: #2b6cb0;
+    }
+
+    /* Genel Buton Stili (Basla/Oyunu Bitir/Ana Ekrana Dön) */
+    .basla-butonu,
+    .ana-butonu {
+      background-color: #4299e1; /* Ana buton rengi */
+      color: white;
+      border: none;
+      padding: 14px 24px;
+      font-size: 1.2rem;
+      border-radius: 8px;
+      cursor: pointer;
+      margin-top: 15px;
+      transition: background-color 0.3s;
+      width: auto; /* İçeriğe göre genişle */
+    }
+
+    .basla-butonu:hover,
+    .ana-butonu:hover {
+      background-color: #3182ce;
+    }
+
+    .ana-butonu {
+        background-color: #319795; /* Özel renk */
+        margin-top: 30px; /* Margin ekledik */
+        padding: 14px 28px; /* Daha geniş padding */
+    }
+    .ana-butonu:hover {
+        background-color: #2c7a7b;
+    }
+
+
+    /* ------------------------------------- */
+    /* GİRİŞ EKRANI AYARLARI                 */
+    /* ------------------------------------- */
+    .grup-formu {
+      display: flex;
+      flex-direction: column;
+      gap: 18px; /* Boşlukları artırdık */
+    }
+
+    .grup-formu label {
+      display: flex;
+      flex-direction: column;
+      font-weight: 500;
+      font-size: 1.1rem; /* Label font boyutunu artırdık */
+      color: #2d3748;
+    }
+
+    .grup-formu input {
+      margin-top: 8px;
+      padding: 12px 16px;
+      font-size: 1.1rem; /* Input font boyutunu artırdık */
+      border: 1px solid #cbd5e0;
+      border-radius: 8px;
+      transition: border-color 0.3s;
+    }
+
+    .grup-formu input:focus {
+      border-color: #4299e1;
+      outline: none;
+    }
+
+    .grup-formu select {
+      margin-top: 8px;
+      padding: 14px 18px; /* Seçici padding ve font boyutunu artırdık */
+      font-size: 1.2rem;
+      border: 1px solid #cbd5e0;
+      border-radius: 8px;
+      transition: border-color 0.3s;
+      appearance: none;
+      background-color: #f8f8f8;
+      cursor: pointer;
+    }
+
+    .grup-formu select:focus {
+      border-color: #4299e1;
+      outline: none;
+    }
+
+
+    /* ------------------------------------- */
+    /* ÇARK EKRANI AYARLARI                  */
+    /* ------------------------------------- */
+    .ayet {
+      font-size: 1.2rem; /* Ayet font boyutunu artırdık */
+      font-style: italic;
+      background: #d9f7f0;
+      padding: 15px 20px;
+      border-radius: 10px;
+      margin-bottom: 25px;
+      box-shadow: 0 0 8px rgba(0,0,0,0.05);
+      width: 100%; /* Kapsayıcının genişliği kadar olsun */
+      text-align: center;
+    }
+
+    .canvas-container {
+      position: relative;
+      width: 550px; /* Çark boyutunu daha da büyüttük */
+      height: 550px; /* Çark boyutunu daha da büyüttük */
+    }
+
+    canvas {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      background: white;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.12);
+    }
+
+    /* OK İŞARETİ */
+    #okIsareti {
+      --ok-yatay-boyut: 10px; /* Yatay boyut için değişken */
+      --ok-dikey-boyut: 25px; /* Dikey boyut için değişken */
+
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%); /* Rotate kaldırıldı, okun ucu aşağı bakacak */
+      width: 0;
+      height: 0;
+      border-left: var(--ok-yatay-boyut) solid transparent;
+      border-right: var(--ok-yatay-boyut) solid transparent;
+      border-top: var(--ok-dikey-boyut) solid #e53e3e;
+      transition: transform 0.2s ease;
+      z-index: 10;
+    }
+
+    @keyframes okTitrese {
+      0%   { transform: translateX(-50%) scale(1); filter: brightness(1); }
+      50%  { transform: translateX(-50%) scale(1.15); filter: brightness(1.7); }
+      100% { transform: translateX(-50%) scale(1); filter: brightness(1); }
+    }
+
+    #okIsareti.titre {
+      animation: okTitrese 0.4s ease;
+    }
+
+    /* Çevir Butonu */
+    .canvas-button {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 2;
+      width: 120px; /* Burayı büyüttük */
+      height: 120px; /* Burayı büyüttük */
+      line-height: 120px; /* Height ile aynı yapın */
+      font-size: 1.4rem; /* Çevir butonu font boyutunu artırdık */
+      text-align: center;
+      border-radius: 50%;
+      background-color: #319795;
+      color: white;
+      border: none;
+      cursor: pointer;
+      box-shadow: 0 0 15px rgba(0,0,0,0.18);
+      transition: background-color 0.3s;
+    }
+
+    .canvas-button:hover {
+      background-color: #2c7a7b;
+    }
+
+    /* Grup Tablosu (Çark ekranı altında) */
+    .grup-tablosu {
+      display: flex;
+      flex-wrap: wrap; /* Gerekirse alt satıra geçsin */
+      gap: 25px; /* Boşlukları artırdık */
+      margin-top: 35px;
+      justify-content: center; /* Grupları ortala */
+      width: 100%; /* Kapsayıcının tam genişliğini kullan */
+    }
+
+    .grup {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      background: white;
+      border-radius: 10px;
+      padding: 12px 16px;
+      box-shadow: 0 3px 8px rgba(0,0,0,0.12);
+      min-width: 120px; /* Minimum genişliği artırdık, tek grup için daha iyi görünebilir */
+      flex-basis: auto; /* Flex öğelerinin varsayılan boyutlandırması */
+    }
+
+    .grup .isim {
+      font-weight: bold;
+      font-size: 1.1rem; /* Grup ismi font boyutunu artırdık */
+      margin-bottom: 6px;
+    }
+
+    .grup .puan {
+      font-size: 1.6rem; /* Puan font boyutunu artırdık */
+      color: #319795;
+    }
+
+    .aktif-grup-box { /* Çark ekranındaki aktif grup göstergesi */
+      font-size: 1.3rem; /* Aktif grup font boyutunu artırdık */
+      font-weight: bold;
+      color: #2c7a7b;
+      margin-bottom: 25px;
+      margin-top: 20px; /* Biraz boşluk */
+    }
+
+
+    /* ------------------------------------- */
+    /* SORU SAYFASI AYARLARI                 */
+    /* ------------------------------------- */
+    .ust-bilgi-kutusu {
+      display: flex;
+      justify-content: space-between;
+      width: 100%;
+      padding: 12px 0;
+      margin-bottom: 25px;
+      font-size: 1.2rem; /* Üst bilgi font boyutunu artırdık */
+      font-weight: 500;
+      color: #2d3748;
+    }
+
+    .ust-bilgi {
+      padding: 10px 15px;
+      background: #e6fffa;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.08);
+    }
+
+    .soru-kutusu {
+      background: #ffffff;
+      padding: 35px;
+      border-radius: 12px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+      width: 100%;
+      max-width: 800px; /* Maksimum genişliği artırdık */
+      min-height: 280px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      color: #2d3748;
+    }
+
+    .soru-metin {
+      font-size: 1.5rem; /* Soru metin font boyutunu artırdık */
+      margin-bottom: 30px;
+    }
+
+    .secenek-kutusu {
+      display: flex;
+      flex-direction: column;
+      gap: 15px; /* Boşlukları artırdık */
+      margin-top: 15px;
+      width: 100%;
+    }
+
+    .secenek-btn {
+      background: #ebf8ff;
+      border: 1px solid #90cdf4;
+      border-radius: 10px;
+      padding: 14px 20px;
+      font-size: 1.1rem; /* Seçenek butonu font boyutunu artırdık */
+      cursor: pointer;
+      text-align: left;
+      transition: background 0.2s;
+    }
+
+    .secenek-btn:hover:not(.disabled):not(.selected-option) {
+      background: #bee3f8;
+    }
+
+    /* Sonuç kutuları (Doğru/Yanlış) */
+    .sonuc-kutusu {
+      padding: 25px;
+      border-radius: 10px;
+      margin-top: 25px;
+      text-align: center;
+      border-left: 10px solid; /* Kalınlaştırdık */
+      width: 100%;
+    }
+
+    .sonuc-kutusu.dogru {
+        border-color: #48bb78;
+        background-color: #f0fff4;
+    }
+
+    .sonuc-kutusu.yanlis {
+        border-color: #f56565;
+        background-color: #fff5f5;
+    }
+
+    .sonuc-kutusu h3 {
+      margin-bottom: 12px;
+      font-size: 1.5rem; /* Sonuç başlık font boyutunu artırdık */
+    }
+
+    .sonuc-kutusu p {
+      font-size: 1.1rem; /* Sonuç açıklama font boyutunu artırdık */
+      color: #4a5568;
+    }
+
+    /* Joker Mesaj Kutusu */
+    .message-box {
+        margin-top: 20px;
+        padding: 15px;
+        background-color: #fff3cd;
+        border: 1px solid #ffeeba;
+        border-radius: 8px;
+        color: #856404;
+        font-size: 1.1rem;
+        text-align: center;
+        width: 100%;
+        max-width: 600px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    /* Joker Butonları */
+    .joker-button-container {
+        display: flex;
+        justify-content: center;
+        gap: 15px;
+        margin-top: 25px;
+        width: 100%;
+    }
+
+    .joker-button {
+        background-color: #63b3ed;
+        color: white;
+        border: none;
+        padding: 12px 20px;
+        font-size: 1rem;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: background-color 0.3s;
+    }
+
+    .joker-button:hover:not(:disabled) {
+        background-color: #4299e1;
+    }
+
+    .joker-button:disabled {
+        background-color: #cbd5e0;
+        cursor: not-allowed;
+    }
+
+    /* Seçenek Butonu Renkleri (Doğru/Yanlış/Seçili) */
+    .secenek-btn.correct-answer {
+      background-color: #c6f6d5; /* Green for correct answer */
+      border-color: #68d391;
+      font-weight: bold;
+    }
+
+    .secenek-btn.incorrect-answer {
+      background-color: #fed7d7; /* Red for incorrect answer */
+      border-color: #fc8181;
+      font-weight: bold;
+    }
+
+    .secenek-btn.selected-option {
+        background-color: #aed6f1; /* Light blue for selected (for Çift Cevap) */
+        border-color: #6bb0e6;
+    }
+
+    .secenek-btn.disabled {
+      background-color: #e2e8f0;
+      color: #a0aec0;
+      border-color: #cbd5e0;
+      cursor: not-allowed;
+    }
+
+
+    /* ------------------------------------- */
+    /* OYUN BİTTİ EKRANI AYARLARI            */
+    /* ------------------------------------- */
+    .puan-tablosu {
+      width: 90%; /* Genişliği artırdık */
+      margin: 25px auto 35px;
+      border-collapse: collapse;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    .puan-tablosu th, .puan-tablosu td {
+      padding: 14px 18px;
+      border: 1px solid #ebf8ff;
+      text-align: left;
+      font-size: 1.1rem; /* Tablo font boyutunu artırdık */
+    }
+
+    .puan-tablosu thead {
+      background-color: #4299e1;
+      color: white;
+    }
+
+    .puan-tablosu tbody tr:nth-child(even) {
+      background-color: #f7fafc;
+    }
+
+    .puan-tablosu tbody tr:hover {
+      background-color: #ebf8ff;
+    }
+
+
+    /* ------------------------------------- */
+    /* RESPONSIVE AYARLAR                    */
+    /* ------------------------------------- */
+    @media (max-width: 768px) { /* Tablet boyutları için orta nokta ekledik */
+      body {
+        font-size: 1rem; /* Mobil ve tablet için varsayılan font boyutu */
+      }
+      .giris-ekrani, .oyun-bitti-ekran, .tam-ekran-kapsayici {
+        padding: 25px;
+        max-width: 90%; /* Daha esnek max-width */
+      }
+      .baslik {
+        font-size: 1.8rem;
+      }
+      .grup-formu input, .grup-formu select {
+        font-size: 1rem;
+        padding: 10px 14px;
+      }
+      .basla-butonu {
+        font-size: 1.1rem;
+        padding: 12px 20px;
+      }
+      .canvas-container {
+        width: 550px; /* Tablet için çark boyutunu ayarladık */
+        height: 550px;
+      }
+      /* OK İŞARETİ DÜZELTMESİ (Tablet) */
+      #okIsareti {
+        --ok-yatay-boyut: 10px;
+        --ok-dikey-boyut: 25px;
+      }
+      @keyframes okTitrese { /* OK titremesi boyutunu küçült */
+        0%   { transform: translateX(-50%) scale(1); filter: brightness(1); }
+        50%  { transform: translateX(-50%) scale(1.1); filter: brightness(1.5); }
+        100% { transform: translateX(-50%) scale(1); filter: brightness(1); }
+      }
+      .canvas-button {
+        width: 120px; /* Tablet için çevir butonu */
+        height: 120px;
+        line-height: 120px;
+        font-size: 1.6rem;
+      }
+      .grup-tablosu {
+        gap: 15px;
+      }
+      .grup {
+        min-width: 100px;
+        padding: 8px 12px;
+      }
+      .grup .isim {
+        font-size: 0.95rem;
+      }
+      .grup .puan {
+        font-size: 1.3rem;
+      }
+      .aktif-grup-box {
+        font-size: 1.1rem;
+      }
+      .ust-bilgi-kutusu {
+        font-size: 1rem;
+        padding: 8px 0;
+      }
+      .ust-bilgi {
+        padding: 6px 10px;
+      }
+      .soru-kutusu {
+        padding: 25px;
+        min-height: 270px;
+        max-width: 90%;
+      }
+      .soru-metin {
+        font-size: 1.2rem;
+      }
+      .secenek-btn {
+        padding: 10px 14px;
+        font-size: 1rem;
+      }
+      .sonuc-kutusu {
+        padding: 20px;
+        border-left: 8px solid;
+      }
+      .sonuc-kutusu h3 {
+        font-size: 1.3rem;
+      }
+      .sonuc-kutusu p {
+        font-size: 1rem;
+      }
+      .joker-button-container {
+        gap: 10px;
+      }
+      .joker-button {
+        padding: 10px 15px;
+        font-size: 0.9rem;
+      }
+      .puan-tablosu th, .puan-tablosu td {
+        padding: 10px 12px;
+        font-size: 1rem;
+      }
+      .ana-butonu {
+        font-size: 1.1rem;
+        padding: 12px 22px;
+      }
+    }
+
+    @media (max-width: 480px) { /* Telefon boyutları için daha spesifik ayarlamalar */
+      body {
+        font-size: 0.95rem;
+      }
+      .giris-ekrani {
+        padding: 20px 25px;
+      }
+      .baslik {
+        font-size: 1.6rem;
+      }
+      .canvas-container {
+        width: 380px; /* Telefon için çark boyutunu ayarladık */
+        height: 380px;
+      }
+      /* OK İŞARETİ DÜZELTMESİ (Mobil) */
+      #okIsareti {
+        --ok-yatay-boyut: 10px;
+        --ok-dikey-boyut: 25px;
+      }
+      .canvas-button {
+        width: 120px; /* Telefon için çevir butonu */
+        height: 120px;
+        line-height: 120px;
+        font-size: 1.5rem;
+      }
+      /* Grup tablosu için 2x2 düzen (Mobil) */
+      .grup-tablosu {
+        flex-direction: row; /* Yan yana hizalama */
+        justify-content: center; /* Ortala */
+        align-items: flex-start; /* Üste hizala */
+        gap: 10px; /* Aralarındaki boşluğu koru */
+      }
+      .grup {
+        min-width: unset; /* Minimum genişliği kaldır */
+        width: calc(50% - 10px); /* 2x2 düzen için genişlik ayarı (boşluk dahil) */
+        padding: 10px;
+        box-sizing: border-box; /* Padding'i genişliğe dahil et */
+      }
+      .grup .isim {
+        font-size: 1rem;
+      }
+      .grup .puan {
+        font-size: 1.4rem;
+      }
+      .ust-bilgi-kutusu {
+        gap: 3px;
+        font-size: 0.85rem;
+      }
+      .ust-bilgi {
+        padding: 5px 8px;
+      }
+      .soru-kutusu {
+        padding: 20px;
+      }
+      .soru-metin {
+        font-size: 1.1rem;
+      }
+      .secenek-btn {
+        padding: 10px 12px;
+        font-size: 0.95rem;
+      }
+      .puan-tablosu th, .puan-tablosu td {
+        padding: 8px 10px;
+        font-size: 0.9rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="appContainer">
+    <div class="giris-ekrani" id="girisEkrani">
+      <h1 class="baslik">🎡 Bilgi Yarışmasına Hoşgeldiniz!</h1>
+      <form id="teamForm" class="grup-formu">
+        <label for="numGroups">Grup Sayısı:</label>
+        <select id="numGroups" name="numGroups" class="grup-formu-input">
+          <option value="1">1 Grup</option>
+          <option value="2">2 Grup</option>
+          <option value="3">3 Grup</option>
+          <option value="4" selected>4 Grup</option>
+        </select>
+        <div id="teamNameInputs">
+          </div>
+        <button type="submit" class="basla-butonu">Oyunu Başlat</button>
+      </form>
+    </div>
+
+    <div class="tam-ekran-kapsayici" id="carkEkrani" style="display:none;">
+      <div id="ayetKutusu" class="ayet"></div>
+      <div class="canvas-container">
+        <div id="okIsareti"></div>
+        <canvas id="wheelCanvas" width="550" height="550"></canvas>
+        <button id="spinButton" class="canvas-button">ÇEVİR</button>
+      </div>
+      <div id="aktifGrupKutusu" class="aktif-grup-box">Sıra: GRUP 1</div>
+      <div class="grup-tablosu" id="grupTablosuCark">
+        </div>
+      <button id="endGameButton" class="basla-butonu" style="margin-top: 30px;">Oyunu Bitir</button>
+    </div>
+
+    <div class="tam-ekran-kapsayici" id="soruSayfasi" style="display:none;">
+      <div class="ust-bilgi-kutusu">
+        <div id="aktifGrup" class="ust-bilgi sol-kose">Sıra: ...</div>
+        <div id="incomingPoints" class="ust-bilgi orta-kose">Puan: 0</div>
+        <div class="ust-bilgi sag-kose">Süre: <span id="time">30</span> sn</div>
+      </div>
+      <div id="questionBox" class="soru-kutusu">
+        <p class="soru-metin">Soru yükleniyor...</p>
+        <div id="optionsContainer" class="secenek-kutusu"></div>
+        <div id="messageBox" class="message-box" style="display:none;"></div>
+        <div class="joker-button-container">
+            <button id="fiftyFiftyJokerBtn" class="joker-button" disabled>50/50 Joker</button>
+            <button id="doubleAnswerJokerBtn" class="joker-button" disabled>Çift Cevap Joker</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="oyun-bitti-ekran" id="finalEkrani" style="display:none;">
+      <h1 id="baslikKutusu" class="baslik">🎉 Oyun Bitti!</h1>
+      <table class="puan-tablosu">
+        <thead>
+          <tr>
+            <th>Grup</th>
+            <th>Puan</th>
+          </tr>
+        </thead>
+        <tbody id="puanlarAlani">
+          </tbody>
+      </table>
+      <button onclick="anaEkranaDon()" class="ana-butonu">Ana Ekrana Dön</button>
+    </div>
+  </div>
+
+  <script>
+    // ------------------------------------- //
+    //           GLOBAL OYUN DEĞİŞKENLERİ    //
+    // ------------------------------------- //
+    let teams = [];
+    let currentTeamIndex = 0;
+    let usedQuestions = [];
+    let currentQuestion = null;
+    let incomingPointsValue = 0;
+    let scoreMultiplier = 1;
+    let timerInterval;
+    let selectedOptionIndex = -1;
+    let selectedDoubleAnswers = [];
+
+    // Joker durumları (her soru için sıfırlanır)
+    let isDoubleAnswerActiveForQuestion = false;
+    let isFiftyFiftyActiveForQuestion = false;
+
+    // ------------------------------------- //
+    //           HTML ELEMENTLERE ERİŞİM     //
+    // ------------------------------------- //
+    const numGroupsSelect = document.getElementById('numGroups');
+    const teamNameInputsDiv = document.getElementById('teamNameInputs');
+    const wheelCanvas = document.getElementById('wheelCanvas');
+    const ctx = wheelCanvas.getContext('2d');
+    const spinButton = document.getElementById('spinButton');
+    const okIsareti = document.getElementById('okIsareti');
+    const questionTextElement = document.querySelector('#questionBox .soru-metin');
+    const optionsContainer = document.getElementById('optionsContainer');
+    const aktifGrupHeader = document.getElementById('aktifGrup');
+    const incomingPointsHeader = document.getElementById('incomingPoints');
+    const timeElement = document.getElementById('time');
+    const messageBox = document.getElementById('messageBox');
+    const fiftyFiftyJokerBtn = document.getElementById('fiftyFiftyJokerBtn');
+    const doubleAnswerJokerBtn = document.getElementById('doubleAnswerJokerBtn');
+    const questionBox = document.getElementById('questionBox');
+    const ayetKutusu = document.getElementById('ayetKutusu'); // Ayet kutusu elementini ekledik
+
+    // ------------------------------------- //
+    //           OYUN VERİLERİ (Çark Segmentleri ve Sorular)    //
+    // ------------------------------------- //
+    const pointMap = [
+      { id: 0, type: "normal", points: 10, label: "10 PUAN", color: "#A3CEF1" },
+      { id: 1, type: "ceza", label: "PAS", color: "#A29CFF" },
+      { id: 2, type: "normal", points: 20, label: "20 PUAN", color: "#FFE156" },
+      { id: 3, type: "ceza", label: "İFLAS", color: "#FF6B6B" },
+      { id: 4, type: "normal", points: 30, label: "30 PUAN", color: "#FFD6A5" },
+      { id: 5, type: "joker", label: "JOKER", color: "#BDE0FE" },
+      { id: 6, type: "normal", points: 40, label: "40 PUAN", color: "#FDFFB6" },
+      { id: 7, type: "normal", points: 50, label: "50 PUAN", color: "#FFABAB" },
+      { id: 8, type: "bonus", label: "PUANINI KATLA", color: "#4ECDC4" },
+      { id: 9, type: "normal", points: 60, label: "60 PUAN", color: "#FFC1CC" },
+      { id: 10, type: "bonus", label: "TEKRAR DÖNDÜR", color: "#88D498" },
+      { id: 11, type: "normal", points: 70, label: "70 PUAN", color: "#D3F8E2" },
+      { id: 12, type: "joker", label: "JOKER", color: "#8FBCBB" },
+      { id: 13, type: "normal", points: 80, label: "80 PUAN", color: "#C6E2E9" },
+      { id: 14, type: "ceza", label: "PAS", color: "#A29CFF" },
+      { id: 15, type: "normal", points: 90, label: "90 PUAN", color: "#FFDDE2" }
+    ];
+
+    const questions = [
+      {
+        question: "İslam'ın ilk şartı nedir?",
+        options: ["Oruç", "Zekat", "Şehadet", "Namaz"],
+        answer: 2,
+        explanation: "İslam'ın ilk şartı Allah’a ve Peygamber’e iman etmektir."
+      },
+      {
+        question: "Kur'an-ı Kerim kaç sureden oluşur?",
+        options: ["110", "112", "113", "114"],
+        answer: 3,
+        explanation: "Kur’an-ı Kerim'de 114 sure vardır."
+      },
+      {
+        question: "Hz. Muhammed'in doğum yeri neresidir?",
+        options: ["Medine", "Mekke", "Kudüs", "Taif"],
+        answer: 1,
+        explanation: "Peygamberimiz Mekke'de doğmuştur."
+      },
+      {
+        question: "İslam'ın beş şartından biri değildir:",
+        options: ["Namaz", "Oruç", "Sadaka", "Hac"],
+        answer: 2,
+        explanation: "Sadaka, farz değil; ancak hayırlı bir davranıştır."
+      },
+      {
+        question: "Zekât kimlere verilir?",
+        options: ["Zenginlere", "Yoksullara", "Akrabalara", "Komşulara"],
+        answer: 1,
+        explanation: "Zekât, malı olmayan yoksullara verilir."
+      },
+      {
+        question: "Hac ibadeti hangi ayda yapılır?",
+        options: ["Ramazan", "Zilhicce", "Muharrem", "Recep"],
+        answer: 1,
+        explanation: "Hac, Zilhicce ayında yapılır."
+      },
+      {
+        question: "Kur’an-ı Kerim'de ilk indirilen ayet hangi suredendir?",
+        options: ["Fatiha", "Alak", "Bakara", "Yasin"],
+        answer: 1,
+        explanation: "Kur'an-ı Kerim'de ilk indirilen ayet Alak Suresi'nin ilk beş ayetidir."
+      },
+      {
+        question: "Namazda kıble ne yöndedir?",
+        options: ["Doğu", "Kâbe", "Kudüs", "Batı"],
+        answer: 1,
+        explanation: "Namazda kıble, Mekke'deki Kâbe yönündedir."
+      },
+      {
+        question: "İslam'ın ikinci şartı nedir?",
+        options: ["Namaz", "Zekat", "Oruç", "Hac"],
+        answer: 0,
+        explanation: "İslam'ın ikinci şartı namaz kılmaktır."
+      },
+      {
+        question: "Kuran-ı Kerim kaç yılda indirilmiştir?",
+        options: ["13", "23", "33", "40"],
+        answer: 1,
+        explanation: "Kuran-ı Kerim yaklaşık 23 yılda parça parça indirilmiştir."
+      },
+      {
+        question: "Hz. Muhammed'in (s.a.v.) babasının adı nedir?",
+        options: ["Ebu Talib", "Abdullah", "Hamza", "Ömer"],
+        answer: 1,
+        explanation: "Peygamber Efendimiz'in babasının adı Abdullah'tır."
+      },
+      {
+        question: "İslam takvimine göre ilk ay hangisidir?",
+        options: ["Ramazan", "Şevval", "Muharrem", "Recep"],
+        answer: 2,
+        explanation: "İslam takviminin ilk ayı Muharrem ayıdır."
+      },
+      {
+        question: "Oruç ibadeti hangi ayda yerine getirilir?",
+        options: ["Zilhicce", "Şaban", "Ramazan", "Recep"],
+        answer: 2,
+        explanation: "Oruç ibadeti Ramazan ayında yerine getirilir."
+      },
+      {
+        question: "Peygamber Efendimiz'e vahiy getiren meleğin adı nedir?",
+        options: ["Mikail", "İsrafil", "Azrail", "Cebrail"],
+        answer: 3,
+        explanation: "Peygamberimize vahiy getiren melek Cebrail (a.s.)'dır."
+      },
+      {
+        question: "Kuran-ı Kerim'de adı geçen tek kadın kimdir?",
+        options: ["Ayşe", "Fatıma", "Meryem", "Hatice"],
+        answer: 2,
+        explanation: "Kuran-ı Kerim'de adı geçen tek kadın Hz. Meryem'dir."
+      },
+      {
+        question: "Veda Hutbesi nerede okunmuştur?",
+        options: ["Mekke", "Medine", "Arafat", "Kudüs"],
+        answer: 2,
+        explanation: "Peygamber Efendimiz Veda Hutbesi'ni Arafat'ta okumuştur."
+      },
+      {
+        question: "İslam'da zekat oranı genellikle yüzde kaçtır?",
+        options: ["%1", "%2.5", "%5", "%10"],
+        answer: 1,
+        explanation: "Zekat oranı genellikle %2.5 veya 1/40'tır."
+      },
+      {
+        question: "Hicret olayı hangi şehirler arasında gerçekleşmiştir?",
+        options: ["Mekke-Kudüs", "Medine-Şam", "Mekke-Medine", "Taif-Medine"],
+        answer: 2,
+        explanation: "Hicret, Mekke'den Medine'ye gerçekleşmiştir."
+      },
+      {
+        question: "Kuran-ı Kerim'in ilk suresi hangisidir?",
+        options: ["Bakara", "Fatiha", "İhlas", "Nas"],
+        answer: 1,
+        explanation: "Kuran-ı Kerim'in ilk suresi Fatiha Suresi'dir."
+      },
+      {
+        question: "Namazda 'Sübhane Rabbiyel Azim' hangi rükunda söylenir?",
+        options: ["Rüku", "Secde", "Kıyam", "Kade"],
+        answer: 0,
+        explanation: "Rükuda 'Sübhane Rabbiyel Azim' denir."
+      }
+    ];
+
+    // ------------------------------------- //
+    //           SAYFA YÖNETİMİ VE YÜKLEME   //
+    // ------------------------------------- //
+
+    // Sayfa değiştirme fonksiyonu
+    function showPage(pageId) {
+      document.getElementById('girisEkrani').style.display = 'none';
+      document.getElementById('carkEkrani').style.display = 'none';
+      document.getElementById('soruSayfasi').style.display = 'none';
+      document.getElementById('finalEkrani').style.display = 'none';
+
+      const targetPage = document.getElementById(pageId);
+      if (targetPage) {
+        if (targetPage.classList.contains('tam-ekran-kapsayici')) {
+          targetPage.style.display = 'flex';
+        } else {
+          targetPage.style.display = 'block';
+        }
+      }
+
+      // Sayfa özel başlatma
+      if (pageId === 'carkEkrani') {
+        initializeWheelPage();
+      } else if (pageId === 'soruSayfasi') {
+        initializeQuestionPage();
+      } else if (pageId === 'finalEkrani') {
+        initializeFinalPage();
+      }
+    }
+
+    // Ana ekrana dönme ve oyunu sıfırlama
+    function anaEkranaDon() {
+        localStorage.clear();
+        teams = [];
+        currentTeamIndex = 0;
+        usedQuestions = [];
+        currentQuestion = null;
+        incomingPointsValue = 0;
+        scoreMultiplier = 1;
+        clearInterval(timerInterval);
+
+        showPage('girisEkrani');
+        generateTeamInputs(); // Yeni oyun için inputları sıfırla
+    }
+
+    // Sayfa yüklendiğinde giriş ekranını göster ve inputları oluştur
+    document.addEventListener('DOMContentLoaded', () => {
+        showPage('girisEkrani');
+        generateTeamInputs();
+    });
+
+    // ------------------------------------- //
+    //           GİRİŞ EKRANI İŞLEVLERİ      //
+    // ------------------------------------- //
+
+    // Grup sayısı değiştikçe inputları oluştur
+    function generateTeamInputs() {
+      const numGroups = parseInt(numGroupsSelect.value);
+      teamNameInputsDiv.innerHTML = '';
+      for (let i = 1; i <= numGroups; i++) {
+        const label = document.createElement('label');
+        label.innerHTML = `Grup ${i} Adı: <input type="text" name="grup${i}" required value="Grup ${i}" />`;
+        teamNameInputsDiv.appendChild(label);
+      }
+    }
+
+    // Form gönderildiğinde takımları kaydet ve çark ekranına geç
+    document.getElementById("teamForm").addEventListener("submit", function(e) {
+      e.preventDefault();
+      const numGroups = parseInt(numGroupsSelect.value);
+      const newTeams = [];
+      for (let i = 1; i <= numGroups; i++) {
+        const input = document.querySelector(`input[name="grup${i}"]`);
+        newTeams.push({
+            name: input.value.trim(),
+            score: 0,
+            hasFiftyFiftyJoker: false,
+            hasDoubleAnswerJoker: false
+        });
+      }
+
+      localStorage.setItem("teams", JSON.stringify(newTeams));
+      localStorage.setItem("currentTeam", 0);
+      localStorage.setItem("usedQuestions", JSON.stringify([]));
+      localStorage.setItem("incomingPoints", 0);
+      localStorage.setItem("scoreMultiplier", 1);
+
+      showPage('carkEkrani');
+    });
+
+    // ------------------------------------- //
+    //           ÇARK EKRANI İŞLEVLERİ       //
+    // ------------------------------------- //
+
+    const totalSegments = pointMap.length;
+    const segmentAngle = (2 * Math.PI) / totalSegments;
+    let rotation = 0;
+    let spinning = false;
+    let currentTargetSegmentIndex = -1;
+
+    // Çarkı çizme fonksiyonu
+    function drawWheel() {
+      ctx.clearRect(0, 0, wheelCanvas.width, wheelCanvas.height);
+      const centerX = wheelCanvas.width / 2;
+      const centerY = wheelCanvas.height / 2;
+      const radius = wheelCanvas.width / 2;
+
+      for (let i = 0; i < totalSegments; i++) {
+        const startAngle = i * segmentAngle + rotation;
+        const endAngle = (i + 1) * segmentAngle + rotation;
+        const segment = pointMap[i];
+
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, radius, startAngle, endAngle);
+        ctx.lineTo(centerX, centerY);
+        ctx.closePath();
+        ctx.fillStyle = segment.color;
+        ctx.fill();
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        ctx.save();
+        ctx.translate(centerX, centerY);
+        ctx.rotate(startAngle + segmentAngle / 2);
+        ctx.fillStyle = '#1a202c';
+        ctx.font = '20px Segoe UI';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(segment.label, radius * 0.7, 0); // Yazının konumu
+        ctx.restore();
+      }
+    }
+
+    // Çarkı döndürme animasyonu
+    function spinWheel() {
+      if (spinning) return;
+      spinning = true;
+      spinButton.disabled = true;
+      okIsareti.classList.remove('titre');
+
+      const minRevolutions = 5;
+      const maxRevolutions = 10;
+
+      currentTargetSegmentIndex = Math.floor(Math.random() * totalSegments);
+
+      const arrowReferenceAngle = (3 * Math.PI / 2);
+      const targetSegmentCenterAngle = (currentTargetSegmentIndex * segmentAngle) + (segmentAngle / 2);
+      let rotationNeeded = (arrowReferenceAngle - targetSegmentCenterAngle + (2 * Math.PI)) % (2 * Math.PI);
+      const finalAngle = (minRevolutions * 2 * Math.PI) + rotationNeeded;
+
+      const duration = 4000;
+      const startTime = performance.now();
+
+      function animateSpin(currentTime) {
+        const elapsedTime = currentTime - startTime;
+        const progress = Math.min(elapsedTime / duration, 1);
+        const easeOutQuad = progress * (2 - progress);
+
+        rotation = (finalAngle * easeOutQuad) % (2 * Math.PI);
+        drawWheel();
+
+        if (progress < 1) {
+          requestAnimationFrame(animateSpin);
+        } else {
+          spinning = false;
+          spinButton.disabled = false;
+          okIsareti.classList.add('titre');
+          handleSpinResult(currentTargetSegmentIndex);
+        }
+      }
+      requestAnimationFrame(animateSpin);
+    }
+
+    // Çark dönüş sonucunu yönetme
+    function handleSpinResult(segmentIndex) {
+      const result = pointMap[segmentIndex];
+      const currentTeam = teams[currentTeamIndex];
+
+      incomingPointsValue = 0;
+      scoreMultiplier = 1;
+      isDoubleAnswerActiveForQuestion = false;
+      isFiftyFiftyActiveForQuestion = false;
+
+      switch (result.type) {
+        case "normal":
+          incomingPointsValue = result.points;
+          localStorage.setItem("incomingPoints", incomingPointsValue);
+          localStorage.setItem("scoreMultiplier", scoreMultiplier);
+          showPage('soruSayfasi');
+          break;
+        case "bonus":
+          if (result.label === "TEKRAR DÖNDÜR") {
+            alert(`${currentTeam.name}: Tekrar Döndür! Bir daha çark çevirme hakkı kazandınız.`);
+            spinButton.disabled = false;
+          } else if (result.label === "PUANINI KATLA") {
+            incomingPointsValue = currentTeam.score; // Mevcut puanı gelen puan olarak al
+            scoreMultiplier = 2; // Bu puanı ikiye katla
+            localStorage.setItem("incomingPoints", incomingPointsValue);
+            localStorage.setItem("scoreMultiplier", scoreMultiplier);
+            alert(`${currentTeam.name}: Puanını Katla! Bu soruyu bilirseniz mevcut ${currentTeam.score} puanınız iki katına çıkacak!`);
+            showPage('soruSayfasi');
+          }
+          break;
+        case "joker":
+            assignRandomJokerToCurrentTeam();
+            alert(`${currentTeam.name}: Joker Kazandınız!`);
+            nextTurn(); // Joker verildi, sıra diğer gruba geçer
+            showPage('carkEkrani');
+            break;
+        case "ceza":
+          if (result.label === "İFLAS") {
+            currentTeam.score = 0;
+            updateGroupScoresInLocalStorage();
+            alert(`${currentTeam.name}: İflas! Tüm puanlarınız sıfırlandı.`);
+            nextTurn();
+            showPage('carkEkrani');
+          } else if (result.label === "PAS") {
+            alert(`${currentTeam.name}: Pas! Sıra diğer gruba geçti.`);
+            nextTurn();
+            showPage('carkEkrani');
+          }
+          break;
+      }
+    }
+
+    // Rastgele joker atama
+    function assignRandomJokerToCurrentTeam() {
+        const currentTeam = teams[currentTeamIndex];
+        const availableJokers = [];
+        if (!currentTeam.hasFiftyFiftyJoker) {
+            availableJokers.push("50/50");
+        }
+        if (!currentTeam.hasDoubleAnswerJoker) {
+            availableJokers.push("Çift Cevap");
+        }
+
+        if (availableJokers.length === 0) {
+            alert("Zaten tüm joker haklarınız var!");
+            return;
+        }
+
+        const randomIndex = Math.floor(Math.random() * availableJokers.length);
+        const assignedJoker = availableJokers[randomIndex];
+
+        if (assignedJoker === "50/50") {
+            currentTeam.hasFiftyFiftyJoker = true;
+        } else if (assignedJoker === "Çift Cevap") {
+            currentTeam.hasDoubleAnswerJoker = true;
+        }
+        updateGroupScoresInLocalStorage();
+    }
+
+    // Çarkı döndürme butonu dinleyicisi
+    spinButton.addEventListener('click', spinWheel);
+
+    // Çark ekranını başlatma (sayfa geçişinde çağrılır)
+    function initializeWheelPage() {
+      teams = JSON.parse(localStorage.getItem("teams")) || [];
+      currentTeamIndex = parseInt(localStorage.getItem("currentTeam") || "0");
+      usedQuestions = JSON.parse(localStorage.getItem("usedQuestions")) || [];
+      incomingPointsValue = parseInt(localStorage.getItem("incomingPoints") || "0");
+      scoreMultiplier = parseInt(localStorage.getItem("scoreMultiplier") || "1");
+
+      if (teams.length === 0) {
+        showPage('girisEkrani');
+        return;
+      }
+      drawWheel();
+      updateGroupScoresDisplay();
+      updateCurrentTeamDisplay();
+      displayRandomAyat(); // Ayeti göster
+
+      // Oyunu bitir butonu
+      document.getElementById("endGameButton").addEventListener("click", () => {
+          showPage("finalEkrani");
+      });
+    }
+
+    // Rastgele ayet gösterme
+    function displayRandomAyat() {
+        const ayetler = [
+            "De ki: 'O Allah birdir.' (İhlas Suresi, 1)",
+            "Gerçekten, zorlukla beraber bir kolaylık vardır. (İnşirah Suresi, 5)",
+            "Rabbinin nimetini anlat da anlat. (Duha Suresi, 11)",
+            "Şüphesiz Allah, sabredenlerle beraberdir. (Bakara Suresi, 153)",
+            "Her can ölümü tadacaktır. (Al-i İmran Suresi, 185)",
+            "Allah, her şeyi hakkıyla bilendir. (Bakara Suresi, 282)",
+            "Doğrusu insan için kendi çalışmasından başka bir şey yoktur. (Necm Suresi, 39)"
+        ];
+        const randomIndex = Math.floor(Math.random() * ayetler.length);
+        ayetKutusu.textContent = ayetler[randomIndex];
+    }
+
+    // Grup puanlarını güncelleme (görsel)
+    function updateGroupScoresDisplay() {
+      const grupTablosu = document.getElementById('grupTablosuCark');
+      grupTablosu.innerHTML = '';
+      teams.forEach((team, index) => {
+        const grupDiv = document.createElement('div');
+        grupDiv.classList.add('grup');
+        if (index === currentTeamIndex) {
+          grupDiv.style.border = '2px solid #319795';
+        }
+        grupDiv.innerHTML = `<div class="isim">${team.name}</div>
+                             <div class="puan">${team.score}</div>
+                             ${team.hasFiftyFiftyJoker ? '<span title="50/50 Jokeriniz Var">🃏</span>' : ''}
+                             ${team.hasDoubleAnswerJoker ? '<span title="Çift Cevap Jokeriniz Var">✌️</span>' : ''}`;
+        grupTablosu.appendChild(grupDiv);
+      });
+    }
+
+    // Aktif grubu güncelleme (görsel)
+    function updateCurrentTeamDisplay() {
+      const aktifGrupKutusu = document.getElementById('aktifGrupKutusu');
+      aktifGrupKutusu.textContent = `Sıra: ${teams[currentTeamIndex].name}`;
+    }
+
+    // Sırayı bir sonraki gruba geçirme
+    function nextTurn() {
+      currentTeamIndex = (currentTeamIndex + 1) % teams.length;
+      localStorage.setItem("currentTeam", currentTeamIndex);
+      localStorage.setItem("incomingPoints", 0);
+      localStorage.setItem("scoreMultiplier", 1);
+    }
+
+    // Local Storage'daki grup skorlarını güncelleme
+    function updateGroupScoresInLocalStorage() {
+      localStorage.setItem("teams", JSON.stringify(teams));
+    }
+
+
+    // ------------------------------------- //
+    //           SORU SAYFASI İŞLEVLERİ      //
+    // ------------------------------------- //
+
+    let timeLeft = 30; // Her soru için süre
+
+    // Soru sayfasını başlatma (sayfa geçişinde çağrılır)
+    function initializeQuestionPage() {
+      teams = JSON.parse(localStorage.getItem("teams")) || [];
+      currentTeamIndex = parseInt(localStorage.getItem("currentTeam") || "0");
+      usedQuestions = JSON.parse(localStorage.getItem("usedQuestions")) || [];
+      incomingPointsValue = parseInt(localStorage.getItem("incomingPoints") || "0");
+      scoreMultiplier = parseInt(localStorage.getItem("scoreMultiplier") || "1");
+
+      // Joker ve seçim durumlarını sıfırla
+      isDoubleAnswerActiveForQuestion = false;
+      isFiftyFiftyActiveForQuestion = false;
+      selectedDoubleAnswers = [];
+      selectedOptionIndex = -1;
+
+      if (teams.length === 0) {
+        showPage('girisEkrani');
+        return;
+      }
+
+      aktifGrupHeader.textContent = `Sıra: ${teams[currentTeamIndex].name}`;
+      incomingPointsHeader.textContent = `Puan: ${incomingPointsValue * scoreMultiplier}`;
+      messageBox.style.display = 'none';
+
+      setupJokerButtons();
+      loadQuestion();
+      startTimer();
+    }
+
+    // Joker butonlarını ayarlama
+    function setupJokerButtons() {
+        const currentTeam = teams[currentTeamIndex];
+
+        fiftyFiftyJokerBtn.disabled = !currentTeam.hasFiftyFiftyJoker;
+        fiftyFiftyJokerBtn.onclick = currentTeam.hasFiftyFiftyJoker ? () => activateFiftyFiftyJoker() : null;
+
+        doubleAnswerJokerBtn.disabled = !currentTeam.hasDoubleAnswerJoker;
+        doubleAnswerJokerBtn.onclick = currentTeam.hasDoubleAnswerJoker ? () => activateDoubleAnswerJoker() : null;
+    }
+
+    // 50/50 jokerini aktifleştirme
+    function activateFiftyFiftyJoker() {
+        if (!teams[currentTeamIndex].hasFiftyFiftyJoker) return;
+
+        isFiftyFiftyActiveForQuestion = true;
+        teams[currentTeamIndex].hasFiftyFiftyJoker = false;
+        updateGroupScoresInLocalStorage();
+        setupJokerButtons();
+
+        applyFiftyFifty();
+        messageBox.textContent = "50/50 Joker kullanıldı! İki yanlış şık elendi.";
+        messageBox.style.display = 'block';
+    }
+
+    // Çift Cevap jokerini aktifleştirme
+    function activateDoubleAnswerJoker() {
+        if (!teams[currentTeamIndex].hasDoubleAnswerJoker) return;
+
+        isDoubleAnswerActiveForQuestion = true;
+        teams[currentTeamIndex].hasDoubleAnswerJoker = false;
+        updateGroupScoresInLocalStorage();
+        setupJokerButtons();
+
+        messageBox.textContent = "Çift Cevap aktif! İki şık seçebilirsiniz.";
+        messageBox.style.display = 'block';
+    }
+
+    // Soru yükleme
+    function loadQuestion() {
+      if (usedQuestions.length === questions.length) {
+        alert("Tüm sorular bitti! Oyun sona eriyor.");
+        showPage('finalEkrani');
+        return;
+      }
+
+      let availableQuestions = questions.filter((_, index) => !usedQuestions.includes(index));
+      if (availableQuestions.length === 0) {
+          alert("Tüm sorular kullanılmış. Yeni bir oyun başlatın.");
+          showPage('finalEkrani');
+          return;
+      }
+
+      const randomIndex = Math.floor(Math.random() * availableQuestions.length);
+      currentQuestion = availableQuestions[randomIndex];
+      const questionIndex = questions.indexOf(currentQuestion);
+      usedQuestions.push(questionIndex);
+      localStorage.setItem("usedQuestions", JSON.stringify(usedQuestions));
+
+      const oldResultBox = questionBox.querySelector('.sonuc-kutusu');
+      if (oldResultBox) {
+          oldResultBox.remove();
+      }
+
+      questionTextElement.textContent = currentQuestion.question;
+      optionsContainer.innerHTML = '';
+      selectedOptionIndex = -1;
+      selectedDoubleAnswers = [];
+
+      currentQuestion.options.forEach((option, index) => {
+        const button = document.createElement('button');
+        button.classList.add('secenek-btn');
+        button.textContent = option;
+        button.dataset.index = index;
+        button.addEventListener('click', () => handleOptionClick(index, button));
+        optionsContainer.appendChild(button);
+      });
+    }
+
+    // 50/50 jokerini uygulama
+    function applyFiftyFifty() {
+        const incorrectOptions = [];
+        for (let i = 0; i < currentQuestion.options.length; i++) {
+            if (i !== currentQuestion.answer) {
+                incorrectOptions.push(i);
+            }
+        }
+
+        const disabledIndexes = [];
+        const numToDisable = Math.min(2, incorrectOptions.length);
+
+        while (disabledIndexes.length < numToDisable) {
+            const randomIndex = Math.floor(Math.random() * incorrectOptions.length);
+            disabledIndexes.push(incorrectOptions.splice(randomIndex, 1)[0]);
+        }
+
+        const optionButtons = optionsContainer.querySelectorAll('.secenek-btn');
+        disabledIndexes.forEach(index => {
+            optionButtons[index].classList.add('disabled');
+            optionButtons[index].disabled = true;
+        });
+    }
+
+    // Şık seçimi yönetimi
+    function handleOptionClick(index, button) {
+        if (isDoubleAnswerActiveForQuestion) {
+            if (button.classList.contains('disabled')) {
+                return;
+            }
+
+            if (button.classList.contains('selected-option')) {
+                button.classList.remove('selected-option');
+                selectedDoubleAnswers = selectedDoubleAnswers.filter(i => i !== index);
+            } else {
+                if (selectedDoubleAnswers.length < 2) {
+                    button.classList.add('selected-option');
+                    selectedDoubleAnswers.push(index);
+                } else {
+                    alert("Çift Cevap hakkınızla sadece iki şık seçebilirsiniz.");
+                }
+            }
+
+            if (selectedDoubleAnswers.length === 2) {
+                checkAnswer(selectedDoubleAnswers);
+            }
+
+        } else {
+            selectedOptionIndex = index;
+            checkAnswer(index);
+        }
+    }
+
+    // Cevabı kontrol etme
+    function checkAnswer(chosenValue) {
+      clearInterval(timerInterval);
+
+      let isCorrect = false;
+      let finalPoints = 0;
+
+      const optionButtons = optionsContainer.querySelectorAll('.secenek-btn');
+      optionButtons.forEach(btn => btn.disabled = true);
+      fiftyFiftyJokerBtn.disabled = true;
+      doubleAnswerJokerBtn.disabled = true;
+
+      if (isDoubleAnswerActiveForQuestion) {
+          if (Array.isArray(chosenValue) && chosenValue.length > 0) {
+              isCorrect = chosenValue.includes(currentQuestion.answer);
+          } else {
+              isCorrect = false;
+          }
+      } else {
+          isCorrect = (chosenValue === currentQuestion.answer);
+      }
+
+      if (isCorrect) {
+        finalPoints = incomingPointsValue * scoreMultiplier;
+        teams[currentTeamIndex].score += finalPoints;
+        updateGroupScoresInLocalStorage();
+        displayResult(true, finalPoints);
+      } else {
+        displayResult(false);
+      }
+
+      optionButtons.forEach((button, index) => {
+        if (index === currentQuestion.answer) {
+          button.classList.add('correct-answer');
+        } else {
+          if ((isDoubleAnswerActiveForQuestion && Array.isArray(chosenValue) && chosenValue.includes(index) && !isCorrect) ||
+              (!isDoubleAnswerActiveForQuestion && chosenValue === index && !isCorrect)) {
+              button.classList.add('incorrect-answer');
+          }
+        }
+      });
+
+      localStorage.setItem("scoreMultiplier", 1); // Çarpanı sıfırla
+
+      setTimeout(() => {
+        if (usedQuestions.length === questions.length) {
+            showPage('finalEkrani');
+        } else {
+            nextTurn();
+            showPage('carkEkrani');
+        }
+      }, 4000);
+    }
+
+    // Süreyi başlatma
+    function startTimer() {
+      timeLeft = 30;
+      timeElement.textContent = timeLeft;
+      clearInterval(timerInterval);
+      timerInterval = setInterval(() => {
+        timeLeft--;
+        timeElement.textContent = timeLeft;
+        if (timeLeft <= 0) {
+          clearInterval(timerInterval);
+          alert("Süre doldu! Cevap veremediniz.");
+          const finalSubmission = isDoubleAnswerActiveForQuestion ? selectedDoubleAnswers : -1;
+          checkAnswer(finalSubmission);
+        }
+      }, 1000);
+    }
+
+    // Sonucu gösterme kutusu
+    function displayResult(isCorrect, pointsAwarded = 0) {
+      const resultBox = document.createElement('div');
+      resultBox.classList.add('sonuc-kutusu');
+      questionBox.appendChild(resultBox);
+
+      if (isCorrect) {
+        resultBox.classList.add('dogru');
+        resultBox.innerHTML = `<h3>Doğru Cevap! 🎉</h3><p>${pointsAwarded} puan kazandınız.</p><p>Açıklama: ${currentQuestion.explanation}</p>`;
+      } else {
+        resultBox.classList.add('yanlis');
+        resultBox.innerHTML = `<h3>Yanlış Cevap! 😔</h3><p>Doğru cevap: "${currentQuestion.options[currentQuestion.answer]}".</p><p>Açıklama: ${currentQuestion.explanation}</p>`;
+      }
+    }
+
+
+    // ------------------------------------- //
+    //           OYUN BİTTİ EKRANI İŞLEVLERİ //
+    // ------------------------------------- //
+
+    // Final sayfasını başlatma
+    function initializeFinalPage() {
+      teams = JSON.parse(localStorage.getItem("teams")) || [];
+      const puanlarAlani = document.getElementById('puanlarAlani');
+      puanlarAlani.innerHTML = '';
+
+      teams.sort((a, b) => b.score - a.score); // Puanlara göre sırala
+
+      teams.forEach(team => {
+        const row = document.createElement('tr');
+        row.innerHTML = `<td>${team.name}</td><td>${team.score}</td>`;
+        puanlarAlani.appendChild(row);
+      });
+
+      const baslikKutusu = document.getElementById('baslikKutusu');
+      if (teams.length > 0) {
+        baslikKutusu.textContent = `🎉 Oyun Bitti! Kazanan: ${teams[0].name}`;
+      } else {
+        baslikKutusu.textContent = `🎉 Oyun Bitti!`;
+      }
+    }
+  </script>
+</body>
+</html>
