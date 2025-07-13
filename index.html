@@ -697,7 +697,7 @@
     </div>
   </div>
 
-  <script>
+<script>
     // ------------------------------------- //
     //           GLOBAL OYUN DEĞİŞKENLERİ    //
     // ------------------------------------- //
@@ -928,18 +928,41 @@
     // Sayfa yüklendiğinde giriş ekranını göster ve inputları oluştur
     document.addEventListener('DOMContentLoaded', () => {
         showPage('girisEkrani');
-        generateTeamInputs();
-numGroupsSelect değiştiğinde inputları güncelle
-    numGroupsSelect.addEventListener('change', generateTeamInputs);
+        generateTeamInputs(); // Sayfa yüklendiğinde başlangıçta inputları oluştur
+
+        // BURASI ÖNEMLİ: numGroupsSelect değiştiğinde inputları güncelle
+        // numGroupsSelect'in doğru bir şekilde tanımlandığından emin olun.
+        if (numGroupsSelect) {
+            numGroupsSelect.addEventListener('change', generateTeamInputs);
+        } else {
+            console.error("numGroupsSelect elementi bulunamadı!");
+        }
     });
 
     // ------------------------------------- //
     //           GİRİŞ EKRANI İŞLEVLERİ      //
     // ------------------------------------- //
 
-        // Grup sayısı değiştikçe inputları oluştur
+    // Grup sayısı değiştikçe inputları oluştur
     function generateTeamInputs() {
+      // numGroupsSelect'in değerini almadan önce varlığını kontrol etmek iyi bir pratik.
+      if (!numGroupsSelect) {
+          console.error("generateTeamInputs: numGroupsSelect elementi bulunamadı!");
+          return;
+      }
+
       const numGroups = parseInt(numGroupsSelect.value);
+      if (isNaN(numGroups) || numGroups < 1) { // numGroups'un geçerli bir sayı olduğundan emin ol
+          console.error("Geçersiz grup sayısı:", numGroupsSelect.value);
+          return;
+      }
+
+      // teamNameInputsDiv'in varlığını kontrol et
+      if (!teamNameInputsDiv) {
+          console.error("generateTeamInputs: teamNameInputsDiv elementi bulunamadı!");
+          return;
+      }
+
       teamNameInputsDiv.innerHTML = ''; // Mevcut inputları temizle
       for (let i = 1; i <= numGroups; i++) {
         const label = document.createElement('label');
@@ -1023,8 +1046,8 @@ numGroupsSelect değiştiğinde inputları güncelle
       spinButton.disabled = true;
       okIsareti.classList.remove('titre');
 
-      const minRevolutions = 3;
-      const maxRevolutions = 7;
+      const minRevolutions = 5;
+      const maxRevolutions = 10;
 
       currentTargetSegmentIndex = Math.floor(Math.random() * totalSegments);
 
@@ -1493,5 +1516,5 @@ numGroupsSelect değiştiğinde inputları güncelle
       }
     }
   </script>
-</body>
+</head>
 </html>
